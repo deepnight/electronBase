@@ -14,6 +14,9 @@ class Boot extends hxd.App {
 		var p = new JQ('p');
 		p.css("background-color","red");
 		p.click( _->{});
+
+		function log(str:Dynamic, ?inf) { new JQ("body").append('<pre>$str</pre>'); }
+		haxe.Log.trace = log;
 	}
 
 	override function update(deltaTime:Float) {
