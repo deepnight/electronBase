@@ -3,7 +3,7 @@ import electron.main.IpcMain;
 import js.Node.__dirname;
 import js.Node.process;
 
-import dn.electron.Tools as ET;
+import dn.js.ElectronTools as ET;
 
 class ElectronMain {
 	static var mainWindow : electron.main.BrowserWindow;
@@ -40,8 +40,8 @@ class ElectronMain {
 
 		// Inits
 		ET.initMain(mainWindow);
-		dn.electron.Dialogs.initMain(mainWindow);
-		dn.electron.ElectronUpdater.initMain(mainWindow);
+		dn.js.ElectronDialogs.initMain(mainWindow);
+		dn.js.ElectronUpdater.initMain(mainWindow);
 
 		// Window menu
 		#if debug
