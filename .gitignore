@@ -1,4 +1,8 @@
+# Misc files
 *.map
 *.css
 .tmp
 node_modules
+
+# VScode
+.vscode/settings.json
