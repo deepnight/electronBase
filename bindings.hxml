@@ -1,0 +1,2 @@
+-cp src/bindings/electronUpdater
+-cp src/bindings/jquery

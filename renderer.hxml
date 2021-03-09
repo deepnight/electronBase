@@ -1,5 +1,6 @@
+bindings.hxml
+
 -cp src/electron.renderer
--cp src/bindings
 
 -lib electron
 -lib hxnodejs
@@ -8,4 +9,4 @@
 
 -main Boot
 -dce full
--js assets/appAssets/js/renderer.js
+-js electron/appAssets/js/electron.renderer.js

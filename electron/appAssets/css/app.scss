@@ -1,0 +1,32 @@
+// Reset
+@use "reset.scss";
+
+
+// Colors
+@mixin resetMargin() {
+	margin: 0;
+	padding: 0;
+}
+
+@font-face {
+	font-family: Roboto;
+	src: url("../fonts/RobotoCondensed-Light.ttf");
+}
+
+@font-face {
+	font-family: Roboto Bold;
+	src: url("../fonts/RobotoCondensed-Bold.ttf");
+}
+
+
+body {
+	background: #5c5c81;
+	color: white;
+	font-family: Roboto;
+	font-size: 12pt;
+}
+
+* {
+	user-select: none;
+}
+

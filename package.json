@@ -1,7 +1,7 @@
 {
-	"name": "electronBase",
+	"name": "electronbase",
 	"version": "0.8.2",
-	"main": "appAssets/js/main.js",
+	"main": "electron/appAssets/js/electron.main.js",
 	"productName": "LDtk",
 	"author": "Sebastien Benard",
 	"description": "2D level editor",
@@ -28,12 +28,12 @@
 		"appId": "com.deepnight.electronBase",
 		"artifactName": "${productName} ${version} installer.${ext}",
 		"directories": {
-			"buildResources": "electronBuilderAssets",
-			"output": "redist"
+			"buildResources": "electron/electronBuilderAssets",
+			"output": "electron/redist"
 		},
 		"extraFiles": [],
 		"files": [
-			"appAssets",
+			"electron/appAssets",
 			"package.json"
 		],
 		"fileAssociations": [],

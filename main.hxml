@@ -1,9 +1,9 @@
+bindings.hxml
 -cp src/electron.main
--cp src/bindings
 
 -lib electron
 -lib deepnightLibs
 
 -main ElectronMain
 -dce full
--js assets/appAssets/js/jsmain.js
+-js electron/appAssets/js/electron.main.js

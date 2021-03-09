@@ -108,7 +108,10 @@ Boot.prototype = $extend(hxd_App.prototype,{
 		Boot.ME = this;
 		h3d_Engine.CURRENT.backgroundColor = 16777215;
 		hxd_Res.set_loader(new hxd_res_Loader(new hxd_fs_EmbedFileSystem(haxe_Unserializer.run("og"))));
-		haxe_Log.trace("hello world",{ fileName : "src/electron.renderer/Boot.hx", lineNumber : 14, className : "Boot", methodName : "init"});
+		var p = $("p");
+		p.css("background-color","red");
+		p.click(function(_) {
+		});
 	}
 	,update: function(deltaTime) {
 		hxd_App.prototype.update.call(this,deltaTime);
@@ -136,6 +139,13 @@ EReg.prototype = {
 		} else {
 			throw haxe_Exception.thrown("EReg::matched");
 		}
+	}
+	,matchedRight: function() {
+		if(this.r.m == null) {
+			throw haxe_Exception.thrown("No string matched");
+		}
+		var sz = this.r.m.index + this.r.m[0].length;
+		return HxOverrides.substr(this.r.s,sz,this.r.s.length - sz);
 	}
 	,matchedPos: function() {
 		if(this.r.m == null) {
@@ -922,6 +932,117 @@ Xml.prototype = {
 	}
 	,__class__: Xml
 };
+var dn_Args = function(rawArgs,knownArgs,debug) {
+	if(debug == null) {
+		debug = false;
+	}
+	this.soloValues = [];
+	this.args = new haxe_ds_StringMap();
+	var valueReg = new EReg("^\\s*(?:\"([^-].*?)\"|'([^-].*?)'|([^-\\s].*?)(?:\\s|$))","gi");
+	var argNameReg = new EReg("^(-{0,2}.*?)(?:[=:\\s]|$)","gi");
+	this.raw = rawArgs;
+	if(knownArgs == null) {
+		knownArgs = new haxe_ds_StringMap();
+	}
+	var a = haxe_ds_StringMap.kvIterator(knownArgs.h);
+	while(a.hasNext()) {
+		var a1 = a.next();
+		if(!argNameReg.match(a1.key)) {
+			throw haxe_Exception.thrown("Malformed known arg: " + a1.key);
+		}
+	}
+	if(debug) {
+		haxe_Log.trace("KnownArgs: " + (knownArgs == null ? "null" : haxe_ds_StringMap.stringify(knownArgs.h)),{ fileName : "dn/Args.hx", lineNumber : 32, className : "dn.Args", methodName : "new"});
+	}
+	var str = rawArgs;
+	while(true) if(dn_Args.ARG_REG.match(str)) {
+		if(debug) {
+			haxe_Log.trace("Found arg: " + dn_Args.ARG_REG.matched(1),{ fileName : "dn/Args.hx", lineNumber : 40, className : "dn.Args", methodName : "new"});
+		}
+		argNameReg.match(dn_Args.ARG_REG.matched(1));
+		var argName = argNameReg.matched(1);
+		this.args.h[argName] = [];
+		if(debug) {
+			haxe_Log.trace("  (argName=\"" + argName + "\")",{ fileName : "dn/Args.hx", lineNumber : 46, className : "dn.Args", methodName : "new"});
+		}
+		var valueCount = Object.prototype.hasOwnProperty.call(knownArgs.h,argName) ? knownArgs.h[argName] : dn_Args.ARG_REG.matched(1).indexOf("=") >= 0 ? 1 : 0;
+		str = dn_Args.ARG_REG.matchedRight();
+		if(valueCount > 0) {
+			if(debug) {
+				haxe_Log.trace("  Expecting " + valueCount + " following parameter(s)",{ fileName : "dn/Args.hx", lineNumber : 58, className : "dn.Args", methodName : "new"});
+			}
+			var idx = 0;
+			while(valueCount > 0) if(valueReg.match(str)) {
+				var v = valueReg.matched(valueReg.matched(1) == null ? valueReg.matched(2) == null ? 3 : 2 : 1);
+				if(debug) {
+					haxe_Log.trace("   -> Parameter#" + idx + "=" + v,{ fileName : "dn/Args.hx", lineNumber : 65, className : "dn.Args", methodName : "new"});
+				}
+				this.args.h[argName].push(v);
+				str = valueReg.matchedRight();
+				--valueCount;
+				++idx;
+			} else {
+				break;
+			}
+		}
+	} else if(valueReg.match(str)) {
+		var v1 = valueReg.matched(valueReg.matched(1) == null ? valueReg.matched(2) == null ? 3 : 2 : 1);
+		if(debug) {
+			haxe_Log.trace("Found solo value: " + v1,{ fileName : "dn/Args.hx", lineNumber : 80, className : "dn.Args", methodName : "new"});
+		}
+		this.soloValues.push(v1);
+		str = valueReg.matchedRight();
+	} else {
+		break;
+	}
+};
+$hxClasses["dn.Args"] = dn_Args;
+dn_Args.__name__ = "dn.Args";
+dn_Args.prototype = {
+	toString: function() {
+		var argsOut = [];
+		var a = haxe_ds_StringMap.kvIterator(this.args.h);
+		while(a.hasNext()) {
+			var a1 = a.next();
+			argsOut.push(a1.key + (a1.value.length > 0 ? "(+" + a1.value.length + ")" : ""));
+		}
+		return "Args: soloValues=[" + this.soloValues.join(", ") + "], args=[" + argsOut.join(", ") + "]";
+	}
+	,__class__: dn_Args
+};
+var haxe_IMap = function() { };
+$hxClasses["haxe.IMap"] = haxe_IMap;
+haxe_IMap.__name__ = "haxe.IMap";
+haxe_IMap.__isInterface__ = true;
+var haxe_ds_IntMap = function() {
+	this.h = { };
+};
+$hxClasses["haxe.ds.IntMap"] = haxe_ds_IntMap;
+haxe_ds_IntMap.__name__ = "haxe.ds.IntMap";
+haxe_ds_IntMap.__interfaces__ = [haxe_IMap];
+haxe_ds_IntMap.prototype = {
+	remove: function(key) {
+		if(!this.h.hasOwnProperty(key)) {
+			return false;
+		}
+		delete(this.h[key]);
+		return true;
+	}
+	,keys: function() {
+		var a = [];
+		for( var key in this.h ) if(this.h.hasOwnProperty(key)) a.push(key | 0);
+		return new haxe_iterators_ArrayIterator(a);
+	}
+	,iterator: function() {
+		return { ref : this.h, it : this.keys(), hasNext : function() {
+			return this.it.hasNext();
+		}, next : function() {
+			var i = this.it.next();
+			return this.ref[i];
+		}};
+	}
+	,__class__: haxe_ds_IntMap
+};
 var dn__$Cooldown_CdInst = function(k,f) {
 	this.k = k;
 	this.frames = f;
@@ -1013,10 +1134,6 @@ dn_Delayer.prototype = {
 	}
 	,__class__: dn_Delayer
 };
-var haxe_IMap = function() { };
-$hxClasses["haxe.IMap"] = haxe_IMap;
-haxe_IMap.__name__ = "haxe.IMap";
-haxe_IMap.__isInterface__ = true;
 var haxe_ds_StringMap = function() {
 	this.h = Object.create(null);
 };
@@ -1033,6 +1150,27 @@ haxe_ds_StringMap.keysIterator = function(h) {
 		idx += 1;
 		return keys[idx - 1];
 	}};
+};
+haxe_ds_StringMap.kvIterator = function(h) {
+	var keys = Object.keys(h);
+	var len = keys.length;
+	var idx = 0;
+	return { hasNext : function() {
+		return idx < len;
+	}, next : function() {
+		idx += 1;
+		var k = keys[idx - 1];
+		return { key : k, value : h[k]};
+	}};
+};
+haxe_ds_StringMap.stringify = function(h) {
+	var s = "{";
+	var first = true;
+	for (var key in h) {
+		if (first) first = false; else s += ',';
+		s += key + ' => ' + Std.string(h[key]);
+	}
+	return s + "}";
 };
 haxe_ds_StringMap.prototype = {
 	__class__: haxe_ds_StringMap
@@ -11823,35 +11961,6 @@ h3d_mat_Stencil.prototype = {
 	}
 	,__class__: h3d_mat_Stencil
 };
-var haxe_ds_IntMap = function() {
-	this.h = { };
-};
-$hxClasses["haxe.ds.IntMap"] = haxe_ds_IntMap;
-haxe_ds_IntMap.__name__ = "haxe.ds.IntMap";
-haxe_ds_IntMap.__interfaces__ = [haxe_IMap];
-haxe_ds_IntMap.prototype = {
-	remove: function(key) {
-		if(!this.h.hasOwnProperty(key)) {
-			return false;
-		}
-		delete(this.h[key]);
-		return true;
-	}
-	,keys: function() {
-		var a = [];
-		for( var key in this.h ) if(this.h.hasOwnProperty(key)) a.push(key | 0);
-		return new haxe_iterators_ArrayIterator(a);
-	}
-	,iterator: function() {
-		return { ref : this.h, it : this.keys(), hasNext : function() {
-			return this.it.hasNext();
-		}, next : function() {
-			var i = this.it.next();
-			return this.ref[i];
-		}};
-	}
-	,__class__: haxe_ds_IntMap
-};
 var hxd_PixelFormat = $hxEnums["hxd.PixelFormat"] = { __ename__ : true, __constructs__ : ["ARGB","BGRA","RGBA","RGBA16F","RGBA32F","R8","R16F","R32F","RG8","RG16F","RG32F","RGB8","RGB16F","RGB32F","SRGB","SRGB_ALPHA","RGB10A2","RG11B10UF","R16U","RGB16U","RGBA16U","S3TC"]
 	,ARGB: {_hx_index:0,__enum__:"hxd.PixelFormat",toString:$estr}
 	,BGRA: {_hx_index:1,__enum__:"hxd.PixelFormat",toString:$estr}
@@ -12937,6 +13046,79 @@ h3d_pass_Border.prototype = $extend(h3d_pass_ScreenFx.prototype,{
 		this.primitive.dispose();
 	}
 	,__class__: h3d_pass_Border
+});
+var h3d_pass_ColorMatrixShader = function() {
+	this.maskChannel__ = new h3d_Vector();
+	this.maskPower__ = 0;
+	this.maskMatB__ = new h3d_Vector();
+	this.maskMatA__ = new h3d_Vector();
+	this.matrix2__ = new h3d_Matrix();
+	this.matrix__ = new h3d_Matrix();
+	h3d_shader_ScreenShader.call(this);
+};
+$hxClasses["h3d.pass.ColorMatrixShader"] = h3d_pass_ColorMatrixShader;
+h3d_pass_ColorMatrixShader.__name__ = "h3d.pass.ColorMatrixShader";
+h3d_pass_ColorMatrixShader.__super__ = h3d_shader_ScreenShader;
+h3d_pass_ColorMatrixShader.prototype = $extend(h3d_shader_ScreenShader.prototype,{
+	updateConstants: function(globals) {
+		this.constBits = 0;
+		if(this.useAlpha__) {
+			this.constBits |= 1;
+		}
+		if(this.useMask__) {
+			this.constBits |= 2;
+		}
+		if(this.maskInvert__) {
+			this.constBits |= 4;
+		}
+		if(this.hasSecondMatrix__) {
+			this.constBits |= 8;
+		}
+		this.updateConstantsFinal(globals);
+	}
+	,getParamValue: function(index) {
+		switch(index) {
+		case 0:
+			return this.flipY__;
+		case 1:
+			return this.texture__;
+		case 2:
+			return this.matrix__;
+		case 3:
+			return this.useAlpha__;
+		case 4:
+			return this.useMask__;
+		case 5:
+			return this.maskInvert__;
+		case 6:
+			return this.hasSecondMatrix__;
+		case 7:
+			return this.matrix2__;
+		case 8:
+			return this.mask__;
+		case 9:
+			return this.maskMatA__;
+		case 10:
+			return this.maskMatB__;
+		case 11:
+			return this.maskPower__;
+		case 12:
+			return this.maskChannel__;
+		default:
+		}
+		return null;
+	}
+	,getParamFloatValue: function(index) {
+		switch(index) {
+		case 0:
+			return this.flipY__;
+		case 11:
+			return this.maskPower__;
+		default:
+		}
+		return 0.;
+	}
+	,__class__: h3d_pass_ColorMatrixShader
 });
 var h3d_pass__$Copy_ArrayCopyShader = function() {
 	this.layer__ = 0;
@@ -38979,6 +39161,7 @@ Xml.Comment = 3;
 Xml.DocType = 4;
 Xml.ProcessingInstruction = 5;
 Xml.Document = 6;
+dn_Args.ARG_REG = new EReg("^\\s*(-{1,2}[a-z0-9-]+(?:$|[=:]|\\s+))","gi");
 dn_Cooldown.__meta__ = { obj : { indexes : ["test"]}};
 dn_Process.FIXED_UPDATE_FPS = 30;
 dn_Process.UNIQ_ID = 0;
@@ -39032,6 +39215,7 @@ h3d_mat_Texture.nativeFormat = hxd_PixelFormat.RGBA;
 h3d_pass_Blur.__meta__ = { obj : { ignore : ["shader"]}};
 h3d_shader_ScreenShader.SRC = "HXSLF2gzZC5zaGFkZXIuU2NyZWVuU2hhZGVyBwEFaW5wdXQNAQICCHBvc2l0aW9uBQoBAQADAnV2BQoBAQABAAAEBWZsaXBZAwIAAAUGb3V0cHV0DQICBghwb3NpdGlvbgUMBAUABwVjb2xvcgUMBAUABAAACApwaXhlbENvbG9yBQwEAAAJDGNhbGN1bGF0ZWRVVgUKBAAACghfX2luaXRfXw4GAAALBnZlcnRleA4GAAACAgoAAAUCBgQCBwUMAggFDAUMBgQCCQUKAgMFCgUKAAALAAAFAQYEAgYFDAkDKg4ECgICBQoAAAMGAQoCAgUKBAADAgQDAwEDAAAAAAAAAAADAQMAAAAAAADwPwMFDAUMAA";
 h3d_pass__$Border_BorderShader.SRC = "HXSLHWgzZC5wYXNzLl9Cb3JkZXIuQm9yZGVyU2hhZGVyCQEFaW5wdXQNAQICCHBvc2l0aW9uBQoBAQADAnV2BQoBAQABAAAEBWZsaXBZAwIAAAUGb3V0cHV0DQICBghwb3NpdGlvbgUMBAUABwVjb2xvcgUMBAUABAAACApwaXhlbENvbG9yBQwEAAAJDGNhbGN1bGF0ZWRVVgUKBAAACgVjb2xvcgUMAgAACwhfX2luaXRfXw4GAAAMBnZlcnRleA4GAAANCGZyYWdtZW50DgYAAAMCCwAABQIGBAIHBQwCCAUMBQwGBAIJBQoCAwUKBQoAAAwAAAUBBgQCBgUMCQMqDgQKAgIFCgAAAwYBCgICBQoEAAMCBAMDAQMAAAAAAAAAAAMBAwAAAAAAAPA/AwUMBQwAAQ0AAAUBBgQCCAUMAgoFDAUMAA";
+h3d_pass_ColorMatrixShader.SRC = "HXSLGmgzZC5wYXNzLkNvbG9yTWF0cml4U2hhZGVyFQEFaW5wdXQNAQICCHBvc2l0aW9uBQoBAQADAnV2BQoBAQABAAAEBWZsaXBZAwIAAAUGb3V0cHV0DQICBghwb3NpdGlvbgUMBAUABwVjb2xvcgUMBAUABAAACApwaXhlbENvbG9yBQwEAAAJDGNhbGN1bGF0ZWRVVgUKBAAACgd0ZXh0dXJlCgIAAAsGbWF0cml4BwIAAAwIdXNlQWxwaGECAgABAAAAAAANB3VzZU1hc2sCAgABAAAAAAAOCm1hc2tJbnZlcnQCAgABAAAAAAAPD2hhc1NlY29uZE1hdHJpeAICAAEAAAAAABAHbWF0cml4MgcCAAARBG1hc2sKAgAAEghtYXNrTWF0QQULAgAAEwhtYXNrTWF0QgULAgAAFAltYXNrUG93ZXIDAgAAFQttYXNrQ2hhbm5lbAUMAgAAFghfX2luaXRfXw4GAAAXBnZlcnRleA4GAAAYBWFwcGx5DgYAABkIZnJhZ21lbnQOBgAABAIWAAAFAgYEAgcFDAIIBQwFDAYEAgkFCgIDBQoFCgAAFwAABQEGBAIGBQwJAyoOBAoCAgUKAAADBgEKAgIFCgQAAwIEAwMBAwAAAAAAAAAAAwEDAAAAAAAA8D8DBQwFDAADGAIaBWNvbG9yBQwEAAAbA21hdAcEAAAFDAUBDQsCDAIGAQIaBQwCGwcFDAYBCQMqDgIKAhoFDJIABQsBAwAAAAAAAPA/AwUMAhsHBQwFDAAAARkAAAUBCwINAgUFCBwFY29sb3IFDAQAAAkDIQ4CAgoKAgMFCgUMAAgdAnV2BQsEAAAJAykOAgIDBQoBAwAAAAAAAPA/AwULAAgeAWsDBAAACQMIDgIJAx0OAgkDIQ4CAhEKCQMoDgIJAx0OAgIdBQsCEgULAwkDHQ4CAh0FCwITBQsDBQoFDAIVBQwDAhQDAwAIHwZjb2xvcjIFDAQAAAsCDwIJAhgOAgIcBQwCEAcFDAIcBQwFDAAGBAIHBQwLAg4CCQMYDgMCHwUMCQIYDgICHAUMAgsHBQwCHgMFDAkDGA4DCQIYDgICHAUMAgsHBQwCHwUMAh4DBQwFDAUMAAYEAgcFDAkCGA4CCQMhDgICCgoCAwUKBQwCCwcFDAUMAAA";
 h3d_pass__$Copy_ArrayCopyShader.SRC = "HXSLHmgzZC5wYXNzLl9Db3B5LkFycmF5Q29weVNoYWRlcgoBBWlucHV0DQECAghwb3NpdGlvbgUKAQEAAwJ1dgUKAQEAAQAABAVmbGlwWQMCAAAFBm91dHB1dA0CAgYIcG9zaXRpb24FDAQFAAcFY29sb3IFDAQFAAQAAAgKcGl4ZWxDb2xvcgUMBAAACQxjYWxjdWxhdGVkVVYFCgQAAAoHdGV4dHVyZQsCAAALBWxheWVyAQIAAAwIX19pbml0X18OBgAADQZ2ZXJ0ZXgOBgAADghmcmFnbWVudA4GAAADAgwAAAUCBgQCBwUMAggFDAUMBgQCCQUKAgMFCgUKAAANAAAFAQYEAgYFDAkDKg4ECgICBQoAAAMGAQoCAgUKBAADAgQDAwEDAAAAAAAAAAADAQMAAAAAAADwPwMFDAUMAAEOAAAFAQYEAggFDAkDIQ4CAgoLCQMpDgICCQUKCQMmDgECCwEDBQsFDAUMAA";
 h3d_pass__$Copy_CopyShader.SRC = "HXSLGWgzZC5wYXNzLl9Db3B5LkNvcHlTaGFkZXIJAQVpbnB1dA0BAgIIcG9zaXRpb24FCgEBAAMCdXYFCgEBAAEAAAQFZmxpcFkDAgAABQZvdXRwdXQNAgIGCHBvc2l0aW9uBQwEBQAHBWNvbG9yBQwEBQAEAAAICnBpeGVsQ29sb3IFDAQAAAkMY2FsY3VsYXRlZFVWBQoEAAAKB3RleHR1cmUKAgAACwhfX2luaXRfXw4GAAAMBnZlcnRleA4GAAANCGZyYWdtZW50DgYAAAMCCwAABQIGBAIHBQwCCAUMBQwGBAIJBQoCAwUKBQoAAAwAAAUBBgQCBgUMCQMqDgQKAgIFCgAAAwYBCgICBQoEAAMCBAMDAQMAAAAAAAAAAAMBAwAAAAAAAPA/AwUMBQwAAQ0AAAUBBgQCCAUMCQMhDgICCgoCCQUKBQwFDAA";
 h3d_pass__$CubeCopy_CubeCopyShader.SRC = "HXSLIWgzZC5wYXNzLl9DdWJlQ29weS5DdWJlQ29weVNoYWRlcgoBBWlucHV0DQECAghwb3NpdGlvbgUKAQEAAwJ1dgUKAQEAAQAABAVmbGlwWQMCAAAFBm91dHB1dA0CAgYIcG9zaXRpb24FDAQFAAcFY29sb3IFDAQFAAQAAAgKcGl4ZWxDb2xvcgUMBAAACQxjYWxjdWxhdGVkVVYFCgQAAAoHdGV4dHVyZQwCAAALA21hdAYCAAAMCF9faW5pdF9fDgYAAA0GdmVydGV4DgYAAA4IZnJhZ21lbnQOBgAAAwIMAAAFAgYEAgcFDAIIBQwFDAYEAgkFCgIDBQoFCgAADQAABQEGBAIGBQwJAyoOBAoCAgUKAAADBgEKAgIFCgQAAwIEAwMBAwAAAAAAAAAAAwEDAAAAAAAA8D8DBQwFDAABDgAABQIIDwJ1dgUKBAAABgMGAQIJBQoBAwAAAAAAAABAAwUKAQMAAAAAAADwPwMFCgAGBAIIBQwJAyEOAgIKDAkDHw4BBgEJAykOAgIPBQoBAwAAAAAAAPA/AwULAgsGBQsFCwUMBQwA";
@@ -39213,4 +39397,4 @@ sys_io_File.copyBuf = js_node_buffer_Buffer.alloc(65536);
 }
 })(typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);
 
-//# sourceMappingURL=renderer.js.map
+//# sourceMappingURL=electron.renderer.js.map

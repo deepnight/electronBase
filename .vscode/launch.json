@@ -8,10 +8,10 @@
 			"name": "Debug renderer",
 			"type": "chrome",
 			"request": "launch",
-			"cwd": "${workspaceFolder}/app",
-			"webRoot": "${workspaceFolder}/app",
+			"cwd": "${workspaceFolder}",
+			"webRoot": "${workspaceFolder}",
 			"windows": {
-				"runtimeExecutable": "${workspaceFolder}/assets/node_modules/.bin/electron.cmd"
+				"runtimeExecutable": "${workspaceFolder}/node_modules/.bin/electron.cmd"
 			},
 			"runtimeArgs" : [
 				".",

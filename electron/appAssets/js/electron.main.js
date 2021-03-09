@@ -26,6 +26,13 @@ EReg.prototype = {
 			throw haxe_Exception.thrown("EReg::matched");
 		}
 	}
+	,matchedRight: function() {
+		if(this.r.m == null) {
+			throw haxe_Exception.thrown("No string matched");
+		}
+		var sz = this.r.m.index + this.r.m[0].length;
+		return HxOverrides.substr(this.r.s,sz,this.r.s.length - sz);
+	}
 	,__class__: EReg
 };
 var ElectronMain = function() { };
@@ -43,77 +50,29 @@ ElectronMain.main = function() {
 			ElectronMain.createAppWindow();
 		}
 	});
-	ElectronMain.initIpcBindings();
-};
-ElectronMain.initIpcBindings = function() {
-	electron_main_IpcMain.handle("exit",function(event) {
-		electron_main_App.exit();
-	});
-	electron_main_IpcMain.handle("reload",function(event) {
-		ElectronMain.mainWindow.reload();
-	});
-	electron_main_IpcMain.handle("setFullScreen",function(event,flag) {
-		ElectronMain.mainWindow.setFullScreen(flag);
-	});
-	electron_main_IpcMain.handle("setWinTitle",function(event,args) {
-		ElectronMain.mainWindow.title = args;
-	});
-	electron_main_IpcMain.on("getScreenWidth",function(event) {
-		event.returnValue = require("electron").screen.getPrimaryDisplay().size.width;
-	});
-	electron_main_IpcMain.on("getScreenHeight",function(event) {
-		event.returnValue = require("electron").screen.getPrimaryDisplay().size.height;
-	});
-	electron_main_IpcMain.on("getCwd",function(event) {
-		event.returnValue = process.cwd();
-	});
-	electron_main_IpcMain.on("getArgs",function(event) {
-		event.returnValue = process.argv;
-	});
-	electron_main_IpcMain.on("getAppResourceDir",function(event) {
-		event.returnValue = electron_main_App.getAppPath();
-	});
-	electron_main_IpcMain.on("getExeDir",function(event) {
-		event.returnValue = electron_main_App.getPath("exe");
-	});
-	electron_main_IpcMain.on("getUserDataDir",function(event) {
-		event.returnValue = electron_main_App.getPath("userData");
-	});
-	electron_main_IpcMain.on("isFullScreen",function(event) {
-		event.returnValue = ElectronMain.mainWindow.isFullScreen();
-	});
-};
-ElectronMain.fatalError = function(err) {
-	electron_main_Dialog.showErrorBox("Fatal error",err);
-	electron_main_App.quit();
 };
 ElectronMain.createAppWindow = function() {
 	ElectronMain.mainWindow = new electron_main_BrowserWindow({ webPreferences : { nodeIntegration : true}, fullscreenable : true, show : false, title : "LDtk", icon : __dirname + "/appIcon.png", backgroundColor : "#1e2229"});
 	ElectronMain.mainWindow.once("ready-to-show",function(ev) {
 		var disp = require("electron").screen.getPrimaryDisplay();
-		ElectronMain.mainWindow.webContents.setZoomFactor(1);
+		ElectronMain.mainWindow.webContents.setZoomFactor(dn_electron_Tools.getZoomToFit(800,600));
+		console.log("src/electron.main/ElectronMain.hx:38:",ElectronMain.mainWindow.webContents.getZoomFactor());
 	});
-	ElectronMain.enableDebugMenu();
-	var p = ElectronMain.mainWindow.loadFile("assets/app.html");
+	dn_electron_Tools.initMain(ElectronMain.mainWindow);
+	dn_electron_Dialogs.initMain(ElectronMain.mainWindow);
+	dn_electron_ElectronUpdater.initMain(ElectronMain.mainWindow);
+	dn_electron_Tools.m_createDebugMenu();
+	var path = "electron/appAssets/app.html";
+	var p = ElectronMain.mainWindow.loadFile(path);
 	ElectronMain.mainWindow.maximize();
 	p.then(function(_) {
 		return;
 	},function(_) {
-		ElectronMain.fatalError("\"app.html\" was not found in app assets!");
+		dn_electron_Tools.fatalError("File not found: (" + dn_electron_Tools.getAppResourceDir() + "/" + path + ")!");
 	});
 	ElectronMain.mainWindow.on("closed",function() {
 		ElectronMain.mainWindow = null;
 	});
-	dn_electron_Dialogs.initMain(ElectronMain.mainWindow);
-	dn_electron_ElectronUpdater.initMain(ElectronMain.mainWindow);
-};
-ElectronMain.enableDebugMenu = function() {
-	var menu = electron_main_Menu.buildFromTemplate([{ label : "Debug tools", submenu : [{ label : "Reload", click : function() {
-		ElectronMain.mainWindow.reload();
-	}, accelerator : "CmdOrCtrl+R"},{ label : "Dev tools", click : function() {
-		ElectronMain.mainWindow.webContents.toggleDevTools();
-	}, accelerator : "CmdOrCtrl+Shift+I"}]}]);
-	ElectronMain.mainWindow.setMenu(menu);
 };
 var HxOverrides = function() { };
 HxOverrides.__name__ = "HxOverrides";
@@ -170,6 +129,83 @@ var StringTools = function() { };
 StringTools.__name__ = "StringTools";
 StringTools.replace = function(s,sub,by) {
 	return s.split(sub).join(by);
+};
+var dn_Args = function(rawArgs,knownArgs,debug) {
+	if(debug == null) {
+		debug = false;
+	}
+	this.soloValues = [];
+	this.args = new haxe_ds_StringMap();
+	var valueReg = new EReg("^\\s*(?:\"([^-].*?)\"|'([^-].*?)'|([^-\\s].*?)(?:\\s|$))","gi");
+	var argNameReg = new EReg("^(-{0,2}.*?)(?:[=:\\s]|$)","gi");
+	this.raw = rawArgs;
+	if(knownArgs == null) {
+		knownArgs = new haxe_ds_StringMap();
+	}
+	var a = haxe_ds_StringMap.kvIterator(knownArgs.h);
+	while(a.hasNext()) {
+		var a1 = a.next();
+		if(!argNameReg.match(a1.key)) {
+			throw haxe_Exception.thrown("Malformed known arg: " + a1.key);
+		}
+	}
+	if(debug) {
+		console.log("dn/Args.hx:32:","KnownArgs: " + (knownArgs == null ? "null" : haxe_ds_StringMap.stringify(knownArgs.h)));
+	}
+	var str = rawArgs;
+	while(true) if(dn_Args.ARG_REG.match(str)) {
+		if(debug) {
+			console.log("dn/Args.hx:40:","Found arg: " + dn_Args.ARG_REG.matched(1));
+		}
+		argNameReg.match(dn_Args.ARG_REG.matched(1));
+		var argName = argNameReg.matched(1);
+		this.args.h[argName] = [];
+		if(debug) {
+			console.log("dn/Args.hx:46:","  (argName=\"" + argName + "\")");
+		}
+		var valueCount = Object.prototype.hasOwnProperty.call(knownArgs.h,argName) ? knownArgs.h[argName] : dn_Args.ARG_REG.matched(1).indexOf("=") >= 0 ? 1 : 0;
+		str = dn_Args.ARG_REG.matchedRight();
+		if(valueCount > 0) {
+			if(debug) {
+				console.log("dn/Args.hx:58:","  Expecting " + valueCount + " following parameter(s)");
+			}
+			var idx = 0;
+			while(valueCount > 0) if(valueReg.match(str)) {
+				var v = valueReg.matched(valueReg.matched(1) == null ? valueReg.matched(2) == null ? 3 : 2 : 1);
+				if(debug) {
+					console.log("dn/Args.hx:65:","   -> Parameter#" + idx + "=" + v);
+				}
+				this.args.h[argName].push(v);
+				str = valueReg.matchedRight();
+				--valueCount;
+				++idx;
+			} else {
+				break;
+			}
+		}
+	} else if(valueReg.match(str)) {
+		var v1 = valueReg.matched(valueReg.matched(1) == null ? valueReg.matched(2) == null ? 3 : 2 : 1);
+		if(debug) {
+			console.log("dn/Args.hx:80:","Found solo value: " + v1);
+		}
+		this.soloValues.push(v1);
+		str = valueReg.matchedRight();
+	} else {
+		break;
+	}
+};
+dn_Args.__name__ = "dn.Args";
+dn_Args.prototype = {
+	toString: function() {
+		var argsOut = [];
+		var a = haxe_ds_StringMap.kvIterator(this.args.h);
+		while(a.hasNext()) {
+			var a1 = a.next();
+			argsOut.push(a1.key + (a1.value.length > 0 ? "(+" + a1.value.length + ")" : ""));
+		}
+		return "Args: soloValues=[" + this.soloValues.join(", ") + "], args=[" + argsOut.join(", ") + "]";
+	}
+	,__class__: dn_Args
 };
 var dn__$Cooldown_CdInst = function() { };
 dn__$Cooldown_CdInst.__name__ = "dn._Cooldown.CdInst";
@@ -251,6 +287,34 @@ dn_FilePath.prototype = {
 		return (this.uriScheme != null ? this.uriAuthority == null ? "" + this.uriScheme + ":/" : "" + this.uriScheme + "://" + this.uriAuthority + "/" : "") + (this.directory == null ? "" : this.fileName == null && this.extension == null || this.directory == (this.backslashes ? "\\" : "/") ? this.directory : this.directory == null ? null : this.directory == (this.backslashes ? "\\" : "/") ? this.directory : this.directory + (this.backslashes ? "\\" : "/")) + ((this.fileName == null && this.extension == null ? null : (this.fileName == null ? "" : this.fileName) + (this.extension == null ? "" : "." + this.extension)) == null ? "" : this.fileName == null && this.extension == null ? null : (this.fileName == null ? "" : this.fileName) + (this.extension == null ? "" : "." + this.extension));
 	}
 	,__class__: dn_FilePath
+};
+var haxe_ds_StringMap = function() {
+	this.h = Object.create(null);
+};
+haxe_ds_StringMap.__name__ = "haxe.ds.StringMap";
+haxe_ds_StringMap.kvIterator = function(h) {
+	var keys = Object.keys(h);
+	var len = keys.length;
+	var idx = 0;
+	return { hasNext : function() {
+		return idx < len;
+	}, next : function() {
+		idx += 1;
+		var k = keys[idx - 1];
+		return { key : k, value : h[k]};
+	}};
+};
+haxe_ds_StringMap.stringify = function(h) {
+	var s = "{";
+	var first = true;
+	for (var key in h) {
+		if (first) first = false; else s += ',';
+		s += key + ' => ' + Std.string(h[key]);
+	}
+	return s + "}";
+};
+haxe_ds_StringMap.prototype = {
+	__class__: haxe_ds_StringMap
 };
 var dn_Process = function(parent) {
 	this.baseTimeMul = 1.0;
@@ -429,11 +493,161 @@ dn_electron_ElectronUpdater.initMain = function(win) {
 		autoUpdater.quitAndInstall();
 	});
 };
+var dn_electron_Tools = function() { };
+dn_electron_Tools.__name__ = "dn.electron.Tools";
+dn_electron_Tools.initMain = function(win) {
+	dn_electron_Tools.mainWindow = win;
+	electron_main_IpcMain.handle("exitApp",dn_electron_Tools.exitApp);
+	electron_main_IpcMain.handle("reloadWindow",dn_electron_Tools.reloadWindow);
+	electron_main_IpcMain.handle("setFullScreen",function(ev,flag) {
+		dn_electron_Tools.setFullScreen(flag);
+	});
+	electron_main_IpcMain.handle("setWindowTitle",function(ev,str) {
+		dn_electron_Tools.setWindowTitle(str);
+	});
+	electron_main_IpcMain.handle("fatalError",function(ev,str) {
+		dn_electron_Tools.fatalError(str);
+	});
+	electron_main_IpcMain.on("getScreenWidth",function(ev) {
+		return ev.returnValue = dn_electron_Tools.getScreenWidth();
+	});
+	electron_main_IpcMain.on("getScreenHeight",function(ev) {
+		return ev.returnValue = dn_electron_Tools.getScreenHeight();
+	});
+	electron_main_IpcMain.on("getRawArgs",function(ev) {
+		return ev.returnValue = dn_electron_Tools.getRawArgs();
+	});
+	electron_main_IpcMain.on("getAppResourceDir",function(ev) {
+		return ev.returnValue = dn_electron_Tools.getAppResourceDir();
+	});
+	electron_main_IpcMain.on("getExeDir",function(ev) {
+		return ev.returnValue = dn_electron_Tools.getExeDir();
+	});
+	electron_main_IpcMain.on("getUserDataDir",function(ev) {
+		return ev.returnValue = dn_electron_Tools.getUserDataDir();
+	});
+	electron_main_IpcMain.on("isFullScreen",function(ev) {
+		return ev.returnValue = dn_electron_Tools.isFullScreen();
+	});
+};
+dn_electron_Tools.exitApp = function() {
+	if(electron_main_App == null) {
+		electron_renderer_IpcRenderer.invoke("exitApp");
+	} else {
+		electron_main_App.exit();
+	}
+};
+dn_electron_Tools.reloadWindow = function() {
+	if(electron_main_App == null) {
+		electron_renderer_IpcRenderer.invoke("reloadWindow");
+	} else {
+		dn_electron_Tools.mainWindow.reload();
+	}
+};
+dn_electron_Tools.setFullScreen = function(full) {
+	if(electron_main_App == null) {
+		electron_renderer_IpcRenderer.invoke("setFullScreen",full);
+	} else {
+		dn_electron_Tools.mainWindow.setFullScreen(full);
+	}
+};
+dn_electron_Tools.setWindowTitle = function(str) {
+	if(electron_main_App == null) {
+		electron_renderer_IpcRenderer.invoke("setWindowTitle",str);
+	} else {
+		dn_electron_Tools.mainWindow.setTitle(str);
+	}
+};
+dn_electron_Tools.isFullScreen = function() {
+	if(electron_main_App == null) {
+		return electron_renderer_IpcRenderer.sendSync("isFullScreen");
+	} else {
+		return dn_electron_Tools.mainWindow.isFullScreen();
+	}
+};
+dn_electron_Tools.getScreenWidth = function() {
+	if(electron_main_App == null) {
+		return electron_renderer_IpcRenderer.sendSync("getScreenWidth");
+	} else {
+		return require("electron").screen.getPrimaryDisplay().size.width;
+	}
+};
+dn_electron_Tools.getScreenHeight = function() {
+	if(electron_main_App == null) {
+		return electron_renderer_IpcRenderer.sendSync("getScreenHeight");
+	} else {
+		return require("electron").screen.getPrimaryDisplay().size.height;
+	}
+};
+dn_electron_Tools.getAppResourceDir = function() {
+	if(electron_main_App == null) {
+		return electron_renderer_IpcRenderer.sendSync("getAppResourceDir");
+	} else {
+		return electron_main_App.getAppPath();
+	}
+};
+dn_electron_Tools.getExeDir = function() {
+	if(electron_main_App == null) {
+		return electron_renderer_IpcRenderer.sendSync("getExeDir");
+	} else {
+		return electron_main_App.getPath("exe");
+	}
+};
+dn_electron_Tools.getUserDataDir = function() {
+	if(electron_main_App == null) {
+		return electron_renderer_IpcRenderer.sendSync("getUserDataDir");
+	} else {
+		return electron_main_App.getPath("userData");
+	}
+};
+dn_electron_Tools.getRawArgs = function() {
+	if(electron_main_App == null) {
+		try {
+			return electron_renderer_IpcRenderer.sendSync("getRawArgs");
+		} catch( _g ) {
+			return [];
+		}
+	} else {
+		return process.argv;
+	}
+};
+dn_electron_Tools.getZoomToFit = function(targetWid,targetHei) {
+	var x = dn_electron_Tools.getScreenWidth() / targetWid;
+	var y = dn_electron_Tools.getScreenHeight() / targetHei;
+	var y1 = x < y ? x : y;
+	if(0 > y1) {
+		return 0;
+	} else {
+		return y1;
+	}
+};
+dn_electron_Tools.fatalError = function(err) {
+	if(electron_main_App == null) {
+		electron_renderer_IpcRenderer.invoke("fatalError",err);
+	} else {
+		electron_main_Dialog.showErrorBox("Fatal error",err);
+		electron_main_App.quit();
+	}
+};
+dn_electron_Tools.m_createDebugMenu = function(items) {
+	if(items == null) {
+		items = [];
+	}
+	var menu = electron_main_Menu.buildFromTemplate([{ label : "Debug tools", submenu : [{ label : "Reload", click : dn_electron_Tools.reloadWindow, accelerator : "CmdOrCtrl+R"},{ label : "Dev tools", click : function() {
+		dn_electron_Tools.mainWindow.webContents.toggleDevTools();
+	}, accelerator : "CmdOrCtrl+Shift+I"},{ label : "Toggle full screen", click : function() {
+		dn_electron_Tools.setFullScreen(!dn_electron_Tools.isFullScreen());
+	}, accelerator : "Alt+Enter"},{ label : "Exit", click : dn_electron_Tools.exitApp, accelerator : "CmdOrCtrl+Q"}].concat(items)}]);
+	dn_electron_Tools.mainWindow.setMenu(menu);
+	console.log("dn/electron/Tools.hx:166:",electron_main_Menu.getApplicationMenu());
+	return menu;
+};
 var electron_main_App = require("electron").app;
 var electron_main_BrowserWindow = require("electron").BrowserWindow;
 var electron_main_Dialog = require("electron").dialog;
 var electron_main_IpcMain = require("electron").ipcMain;
 var electron_main_Menu = require("electron").Menu;
+var electron_renderer_IpcRenderer = require("electron").ipcRenderer;
 var haxe_Exception = function(message,previous,native) {
 	Error.call(this,message);
 	this.message = message;
@@ -601,6 +815,7 @@ String.prototype.__class__ = String;
 String.__name__ = "String";
 Array.__name__ = "Array";
 js_Boot.__toStr = ({ }).toString;
+dn_Args.ARG_REG = new EReg("^\\s*(-{1,2}[a-z0-9-]+(?:$|[=:]|\\s+))","gi");
 dn_Cooldown.__meta__ = { obj : { indexes : ["test"]}};
 dn_Process.UNIQ_ID = 0;
 dn_Process.ROOTS = [];
@@ -608,4 +823,4 @@ dn_Version.VERSION_REG = new EReg("^[ \t]*([0-9]+)[.]*([0-9a-z]*)[.]*([0-9]*)\\-
 ElectronMain.main();
 })(typeof window != "undefined" ? window : typeof global != "undefined" ? global : typeof self != "undefined" ? self : this);
 
-//# sourceMappingURL=jsmain.js.map
+//# sourceMappingURL=electron.main.js.map

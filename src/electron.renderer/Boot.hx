@@ -11,7 +11,9 @@ class Boot extends hxd.App {
 		h3d.Engine.getCurrent().backgroundColor = 0xffffff;
 		hxd.Res.initEmbed();
 
-		trace("hello world");
+		var p = new JQ('p');
+		p.css("background-color","red");
+		p.click( _->{});
 	}
 
 	override function update(deltaTime:Float) {
