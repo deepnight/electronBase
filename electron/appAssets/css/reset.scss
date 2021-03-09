@@ -44,3 +44,9 @@ input{
     -webkit-appearance: none;
     border-radius: 0;
 }
+
+pre {
+	font-family: monospace;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+}
