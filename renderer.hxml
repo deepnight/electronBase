@@ -1,0 +1,11 @@
+-cp src/electron.renderer
+-cp src/bindings
+
+-lib electron
+-lib hxnodejs
+-lib heaps
+-lib deepnightLibs
+
+-main Boot
+-dce full
+-js assets/appAssets/js/renderer.js

@@ -1,0 +1,9 @@
+-cp src/electron.main
+-cp src/bindings
+
+-lib electron
+-lib deepnightLibs
+
+-main ElectronMain
+-dce full
+-js assets/appAssets/js/jsmain.js
