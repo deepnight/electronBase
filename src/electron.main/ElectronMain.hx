@@ -51,7 +51,7 @@ class ElectronMain {
 		#end
 
 		// Load app page
-		var path = 'electron/appAssets/app.html';
+		var path = 'electron/appAssets/boot.html';
 		var p = mainWindow.loadFile(path);
 		mainWindow.maximize();
 		p.then( (_)->{}, (_)->ET.fatalError('File not found: (${ET.getAppResourceDir()}/$path)!') );
