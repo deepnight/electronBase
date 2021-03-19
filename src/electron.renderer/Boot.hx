@@ -1,3 +1,8 @@
+/**
+	This class is the very first JS code called from `boot.html`.
+	It initializes Heaps with existing WebGL canvas, then creates an App instance. This is also the place where all low-level initializations should happen (assets, localization etc.)
+**/
+
 class Boot extends hxd.App {
 	public static var ME : Boot;
 
