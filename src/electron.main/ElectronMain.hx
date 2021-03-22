@@ -33,9 +33,12 @@ class ElectronMain {
 			backgroundColor: '#1e2229'
 		});
 		mainWindow.once("ready-to-show", ev->{
-			var disp = electron.main.Screen.getPrimaryDisplay();
+			/*
+				Zoom the main window to fit specified dimensions inside of it.
+
+				This ensures consistency between DOM scaling on various resolutions. Without it, the page elements would appear tiny on large resolutions (eg. 4k). Note: the zoom factor cannot go below 1.0 to prevent font blurring.
+			*/
 			mainWindow.webContents.setZoomFactor( ET.getZoomToFit(800, 600));
-			trace(mainWindow.webContents.getZoomFactor());
 		});
 
 		// Inits
