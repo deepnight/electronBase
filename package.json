@@ -2,12 +2,13 @@
 	"name": "electronbase",
 	"version": "0.8.2",
 	"main": "electron/appAssets/js/electron.main.js",
-	"productName": "LDtk",
+	"productName": "Electron base",
 	"author": "Sebastien Benard",
 	"description": "2D level editor",
 	"scripts": {
 		"start": "electron .",
-		"compile": "cd ..  &&  haxe main.hxml  &&  haxe renderer.hxml",
+		"compile": "haxe main.hxml  &&  haxe renderer.hxml",
+		"pack-prepare": "npm run compile",
 		"pack-test": "npm run pack-prepare  &&  electron-builder build --win --dir --publish never",
 		"pack-win": "npm run pack-prepare  &&  electron-builder build --win --x64 --ia32",
 		"pack-macos": "npm run pack-prepare  &&  electron-builder build --mac --publish never",
@@ -21,7 +22,7 @@
 		"electron-updater": "^4.3.5"
 	},
 	"devDependencies": {
-		"electron": "^10.1.5",
+		"electron": "^12",
 		"electron-builder": "^22.9.1"
 	},
 	"build": {
