@@ -11,7 +11,7 @@ class ElectronMain {
 	static function main() {
 		App.whenReady().then( (_)->createAppWindow() );
 
-		// Mac
+		// macOS
 		App.on('window-all-closed', function() {
 			mainWindow = null;
 			App.quit();
