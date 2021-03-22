@@ -28,7 +28,7 @@ class ElectronMain {
 			webPreferences: { nodeIntegration:true },
 			fullscreenable: true,
 			show: false,
-			title: "LDtk",
+			title: "Electron base",
 			icon: __dirname+"/appIcon.png",
 			backgroundColor: '#1e2229'
 		});
