@@ -17,7 +17,7 @@ class App extends dn.Process {
 	public var jDoc(get,never) : JQ; inline function get_jDoc() return new JQ(js.Browser.document);
 	public var jBody(get,never) : JQ; inline function get_jBody() return new JQ("body");
 	public var jPage(get,never) : JQ; inline function get_jPage() return new JQ("#page");
-	public var jCanvas(get,never) : JQ; inline function get_jCanvas() return new JQ("#webgl");
+	public var jCanvas(get,never) : JQ; inline function get_jCanvas() return new JQ("#heaps");
 
 	public var args: dn.Args;
 	public var focused(default,null) = true;

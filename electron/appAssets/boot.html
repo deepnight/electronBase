@@ -12,15 +12,15 @@
 
 
 <body>
-	<!-- Canvas for Heaps -->
-	<canvas id="webgl"></canvas>
-
-	<!-- Boot JS -->
-	<script type="text/javascript" src="js/electron.renderer.js"></script>
+	<!-- Canvas for Heaps render -->
+	<canvas id="heaps"></canvas>
 
 	<!-- Fix jquery/electron issue -->
 	<script type="text/javascript">
 		window.$ = window.jQuery = window.jquery = require('./js/jquery-git.min.js');
 	</script>
+
+	<!-- Boot JS -->
+	<script type="text/javascript" src="js/electron.renderer.js"></script>
 </body>
 </html>

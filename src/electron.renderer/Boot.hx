@@ -4,12 +4,19 @@
 **/
 
 class Boot extends hxd.App {
-	public static var ME : Boot;
+	public static var ME(default,null) : Boot;
 
 	// Very first method called during boot sequence
-	static function main() new Boot();
+	static function main() {
+		// Force Heaps to use "#heaps" HTML canvas instead of default "#webgl"
+		var canvas : js.html.CanvasElement = cast new js.jquery.JQuery('#heaps').get(0);
+		new hxd.Window(canvas).setCurrent();
 
-	// Engine & canvas ready
+		// Init app
+		new Boot();
+	}
+
+	// Engine is ready, we can start doing stuff
 	override function init() {
 		ME = this;
 
@@ -23,6 +30,7 @@ class Boot extends hxd.App {
 
 	override function update(deltaTime:Float) {
 		super.update(deltaTime);
-		dn.Process.updateAll(hxd.Timer.tmod);
+
+		dn.Process.updateAll( hxd.Timer.tmod );
 	}
 }
