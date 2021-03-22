@@ -1,0 +1,1 @@
+You can put your HTML files that will be loaded using `loadTemplate()` method from `Page` class.
