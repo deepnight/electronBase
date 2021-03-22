@@ -7,5 +7,8 @@ node_modules
 # Build files
 electron/appAssets/js/electron.*
 
+# Redistributables files
+electron/redist
+
 # VScode
 .vscode/settings.json
