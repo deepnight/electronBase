@@ -120,6 +120,7 @@ class App extends dn.Process {
 		keyDowns.remove(ev.keyCode);
 	}
 
+	// Called when window "close" button is used
 	function onWindowCloseButton() {
 		exit(false);
 	}

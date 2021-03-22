@@ -39,6 +39,7 @@ class ElectronMain {
 		});
 
 		// Inits
+		initIpcBindings();
 		ET.initMain(mainWindow);
 		dn.js.ElectronDialogs.initMain(mainWindow);
 		dn.js.ElectronUpdater.initMain(mainWindow);
@@ -59,6 +60,19 @@ class ElectronMain {
 		// Destroy
 		mainWindow.on('closed', function() {
 			mainWindow = null;
+		});
+	}
+
+	static function initIpcBindings() {
+		// Called once when `App` class is ready in renderer
+		IpcMain.handle("appReady", function(ev) {
+			// Manage window "close" button event
+			mainWindow.on('close', function(ev) {
+				if( !dn.js.ElectronUpdater.isIntalling ) {
+					ev.preventDefault();
+					mainWindow.webContents.send("winClose");
+				}
+			});
 		});
 	}
 }
