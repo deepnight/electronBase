@@ -15,7 +15,7 @@
 
 
 body {
-	background: #5c5c81;
+	background: black;
 	color: white;
 	font-family: Roboto;
 	font-size: 12pt;
@@ -23,4 +23,42 @@ body {
 
 * {
 	user-select: none;
+}
+
+canvas#heaps {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 1;
+
+	width: 100vw;
+	height: 100vh;
+
+	&.hidden {
+		display: none;
+	}
+}
+
+#appFadeMask {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 99999;
+	width: 100vw;
+	height: 100vh;
+	background-color: black;
+}
+
+#page {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 2;
+	width: 100vw;
+	height: 100vh;
+	background-color: #5c5c81;
+
+	&:empty {
+		display: none;
+	}
 }

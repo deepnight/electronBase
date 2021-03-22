@@ -12,7 +12,7 @@ class App extends dn.Process {
 		}
 
 	public static var APP_ASSETS_DIR(get,never) : String;
-		static inline function get_APP_ASSETS_DIR() return APP_RESOURCE_DIR+"assets/";
+		static inline function get_APP_ASSETS_DIR() return APP_RESOURCE_DIR+"electron/appAssets/";
 
 	public var jDoc(get,never) : JQ; inline function get_jDoc() return new JQ(js.Browser.document);
 	public var jBody(get,never) : JQ; inline function get_jBody() return new JQ("body");
@@ -47,6 +47,9 @@ class App extends dn.Process {
 		ME = this;
 		createRoot(Boot.ME.s2d);
 
+		// Heaps canvas isn't visible by default
+		disableHeapsCanvas();
+
 		// Init window
 		IpcRenderer.on("winClose", onWindowCloseButton);
 
@@ -68,12 +71,21 @@ class App extends dn.Process {
 		// Heaps events
 		Boot.ME.s2d.addEventListener(onHeapsEvent);
 
-		// Start
-		delayer.addS( ()->{
-			// TODO load first page
-		}, 0.2);
-
+		// Notify electron main
 		IpcRenderer.invoke("appReady");
+
+		// Load first page
+		delayer.addS( ()->{
+			loadPage( ()->new page.HelloWorld() );
+		}, 0.1);
+	}
+
+	public function enableHeapsCanvas() {
+		App.ME.jCanvas.removeClass("hidden");
+	}
+
+	public function disableHeapsCanvas() {
+		App.ME.jCanvas.addClass("hidden");
 	}
 
 
@@ -148,13 +160,15 @@ class App extends dn.Process {
 		}
 	}
 
-	public function addMask() {
-		jBody.find("#appMask").remove();
-		jBody.append('<div id="appMask"/>');
+	function clearAppMask() {
+		jBody.find("#appFadeMask").remove();
 	}
 
-	public function fadeOutMask() {
-		jBody.find("#appMask").fadeOut(200);
+	/** Display a color mask all over the app window **/
+	function createAppMask() {
+		clearAppMask();
+		jBody.append('<div id="appFadeMask"/>');
+		return jBody.find("#appFadeMask");
 	}
 
 	public function miniNotif(html:String, fadeDelayS=0.5, persist=false) {
@@ -236,11 +250,28 @@ class App extends dn.Process {
 	}
 
 
-	public function loadPage( create:()->Page ) {
-		clearCurPage();
-		LOG.flushToFile();
-		curPage = create();
-		curPage.onAppResize();
+	public function loadPage( fadeAnimation=true, create:()->Page ) {
+		function _load() {
+			clearCurPage();
+			LOG.flushToFile();
+			curPage = create();
+			curPage.onAppResize();
+			if( fadeAnimation ) {
+				var jMask = createAppMask();
+				jMask.fadeOut(200, ()->jMask.remove());
+			}
+		}
+
+		if( fadeAnimation && curPage!=null ) {
+			curPage.pause();
+			jPage.off().find("*").off();
+			var jMask = createAppMask();
+			jMask.hide().fadeIn( 100, ()->_load() );
+		}
+		else {
+			clearAppMask();
+			_load();
+		}
 	}
 
 

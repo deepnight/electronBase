@@ -1,16 +1,9 @@
 class Page extends dn.Process {
 	var jPage(get,never) : js.jquery.JQuery; inline function get_jPage() return App.ME.jPage;
 
-	public function new() {
+	function new() {
 		super(App.ME);
 		App.LOG.general("Page started: "+Type.getClassName( Type.getClass(this) )+"()" );
-		App.ME.jCanvas.removeClass("active");
-		App.ME.addMask();
-		delayer.addS( App.ME.fadeOutMask, 0.1 );
-	}
-
-	function showCanvas() {
-		App.ME.jCanvas.addClass("active");
 	}
 
 	public function onAppBlur() {}
@@ -20,12 +13,24 @@ class Page extends dn.Process {
 	public function onAppResize() {}
 	public function onKeyPress(keyCode:Int) {}
 
-	public function loadPageTemplate(id:String, ?vars:Dynamic) {
-		var path = App.APP_ASSETS_DIR + 'tpl/pages/$id.html';
-		App.LOG.fileOp("Loading page template: "+id+" from "+path);
+	/**
+		If `fileName` doesn't provide a path, file will be loaded from the `tpl` folder in app assets.
+	**/
+	public function loadPageTemplate(fileName:String, ?vars:Dynamic) {
+		var fp = dn.FilePath.fromFile(fileName);
+		if( fp.extension==null )
+			fp.extension = "html";
+
+		if( fp.directory==null )
+			fp.appendDirectory( App.APP_ASSETS_DIR+'/tpl' );
+
+		trace(App.APP_RESOURCE_DIR);
+		trace(App.APP_ASSETS_DIR);
+		var path = fp.full;
+		App.LOG.fileOp('Loading page template: $path');
 		var raw = NT.readFileString(path);
 		if( raw==null )
-			throw "Page not found: "+id+" in "+path+"( cwd="+ET.getAppResourceDir()+")";
+			throw "Page not found: "+fileName+" in "+path+"( cwd="+ET.getAppResourceDir()+")";
 
 		if( vars!=null ) {
 			for(k in Reflect.fields(vars))
@@ -35,9 +40,7 @@ class Page extends dn.Process {
 		jPage
 			.off()
 			.removeClass()
-			.addClass(id)
+			.addClass(fp.fileName)
 			.html(raw);
-
-		// JsTools.parseComponents(jPage);
 	}
 }
