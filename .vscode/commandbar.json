@@ -24,7 +24,7 @@
 		{
 			"text": "🖥️ Term",
 			"color": "white",
-			"command": "start /d electron cmd",
+			"command": "start cmd",
 			"alignment": "right",
 			"skipTerminateQuickPick": false,
 			"priority": -30
