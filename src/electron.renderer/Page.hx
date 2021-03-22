@@ -14,7 +14,7 @@ class Page extends dn.Process {
 	public function onKeyPress(keyCode:Int) {}
 
 	/**
-		If `fileName` doesn't provide a path, file will be loaded from the `tpl` folder in app assets.
+		If `fileName` doesn't provide a path, the file will be loaded from the `tpl` folder in app assets.
 	**/
 	public function loadPageTemplate(fileName:String, ?vars:Dynamic) {
 		var fp = dn.FilePath.fromFile(fileName);
@@ -24,10 +24,9 @@ class Page extends dn.Process {
 		if( fp.directory==null )
 			fp.appendDirectory( App.APP_ASSETS_DIR+'/tpl' );
 
-		trace(App.APP_RESOURCE_DIR);
-		trace(App.APP_ASSETS_DIR);
 		var path = fp.full;
 		App.LOG.fileOp('Loading page template: $path');
+
 		var raw = NT.readFileString(path);
 		if( raw==null )
 			throw "Page not found: "+fileName+" in "+path+"( cwd="+ET.getAppResourceDir()+")";
