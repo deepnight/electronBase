@@ -9,33 +9,65 @@
  - jQuery for all DOM manipulations (you can use something else if you prefer)
  - Electron auto-updater (using Git releases)
 
+# Installing
+
 ## Requirements
 
 You will need:
  - [Haxe](https://haxe.org) compiler,
  - [NPM](https://www.npmjs.com/) to install dependencies,
- - My libs `deepnightLibs` for Haxe.
+ - My libs `deepnightLibs` for Haxe (see below),
+ - [VScode](https://code.visualstudio.com/) is recommended.
 
-## Installation
 
-### Getting Haxe and my libs:
+## Installing Haxe
 
 Please refer to this tutorial to install Haxe: [Quick guide to install Haxe](https://deepnight.net/tutorial/a-quick-guide-to-installing-haxe/).
 
-### Install "deepnightLibs"
+## Getting "deepnightLibs"
 
 Run the following command to install my `deepnightLibs`:
 ```
 haxelib git deepnightLibs https://github.com/deepnight/deepnightLibs.git
 ```
 
-### Install Electron and dependencies
+## Getting the source code
+
+### Method 1: fork
+
+Nothing special here, you probably know the drill.
+
+### Method 2: using GitHub template
+Just go to the [ElectronBase repository](https://github.com/deepnight/electronBase) on GitHub and click on the "**Use this template**" button.
+
+Learn more about [GitHub templates here](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template).
+
+### Method 3: adding an upstream remote
+ 1. Make a new empty repo somewhere. It *must* be **strictly empty**: no LICENSE, no README, nothing.
+ 2. Clone it on your system
+ 3. Run:
+```
+git remote add electronBase https://github.com/deepnight/electronBase.git
+git pull electronBase master
+git push origin master
+```
+
+## Installing Electron and dependencies
 
 After retrieving the source code, open a command line **in the root of the repo** and run:
 
 ```
 npm i
 ```
+
+# Usage
+
+## Repo structure
+- `src/electron.main/`: Haxe source code for the Electron Main (ie. very first JS file to be ran on startup).
+- `src/electron.renderer/`: Haxe source code for the Electron Renderer (ie. the actual app browser window).
+- `src/bindinds/`: various extern bindings for Haxe (jQuery, electron auto-updater etc).
+- `electron/`: Electron related files (ie. application and redistributable assets)
+- `res/`: Heaps (webGL) resources, if any.
 
 ## Compiling
 
@@ -86,10 +118,3 @@ npm run pack-macos
 npm run pack-linux-x86
 ```
 
-
-## Repo structure
-- `src/electron.main`: Haxe source code for the Electron Main (ie. very first JS file to be ran on startup).
-- `src/electron.renderer`: Haxe source code for the Electron Renderer (ie. the actual app browser window).
-- `src/bindinds`: various extern bindings for Haxe (jQuery, electron auto-updater etc).
-- `electron`: Electron related files (ie. application and redistributable assets)
-- `res`: Heaps (webGL) resources, if any.
