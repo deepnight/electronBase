@@ -37,6 +37,23 @@ After retrieving the source code, open a command line **in the root of the repo*
 npm i
 ```
 
+## Compiling
+
+To build the Electron main JS:
+```
+haxe main.hxml
+```
+
+To build the Electron renderer JS:
+```
+haxe renderer.hxml
+```
+
+To run the app:
+```
+npm start
+```
+
 ## Repo structure
 - `src/electron.main`: Haxe source code for the Electron Main (ie. very first JS file to be ran on startup).
 - `src/electron.renderer`: Haxe source code for the Electron Renderer (ie. the actual app browser window).
