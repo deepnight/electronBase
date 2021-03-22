@@ -38,11 +38,15 @@ haxelib git deepnightLibs https://github.com/deepnight/deepnightLibs.git
 Nothing special here, you probably know the drill.
 
 ### Method 2: using GitHub template
+
 Just go to the [ElectronBase repository](https://github.com/deepnight/electronBase) on GitHub and click on the "**Use this template**" button.
 
 Learn more about [GitHub templates here](https://help.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template).
 
 ### Method 3: adding an upstream remote
+
+This method is quite similar to a fork:
+
  1. Make a new empty repo somewhere. It *must* be **strictly empty**: no LICENSE, no README, nothing.
  2. Clone it on your system
  3. Run:
