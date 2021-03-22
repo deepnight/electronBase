@@ -64,9 +64,7 @@ class ElectronMain {
 
 				This ensures consistency between DOM scaling on various resolutions. Without it, the page elements would appear tiny on large resolutions (eg. 4k). Note: the zoom factor cannot go below `1/pixelRatio` to prevent font blurring.
 			*/
-			trace("pixelRatio="+ET.getPixelRatio());
 			mainWindow.webContents.setZoomFactor( ET.getZoomToFit(800, 600) );
-			trace("zoom="+mainWindow.webContents.getZoomFactor());
 		});
 	}
 
