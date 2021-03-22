@@ -41,18 +41,51 @@ npm i
 
 To build the Electron main JS:
 ```
-haxe main.hxml
+haxe main.debug.hxml
 ```
 
 To build the Electron renderer JS:
 ```
-haxe renderer.hxml
+haxe renderer.debug.hxml
 ```
 
-To run the app:
+Alternatively, you can build non-debug files using:
+```
+haxe main.hxml
+haxe renderer.hxml
+```
+Or:
+```
+npm run compile
+```
+
+## Running
+
+To run the compiled app:
 ```
 npm start
 ```
+**NOTE:** for some obscure reason, this last command might not work. You can still run the app by either:
+ - using **VScode**, and executing `Start debugging` command.
+ - run `npm run pack-test` to quickly create an unpacked redistributable, then execute the `.exe` file in the `/electron/redist/win-unpacked` folder.
+
+## Creating redistributables
+
+**Windows**:
+```
+npm run pack-win
+```
+
+**macOS** (requires an actual OSX environment):
+```
+npm run pack-macos
+```
+
+**Linux**:
+```
+npm run pack-linux-x86
+```
+
 
 ## Repo structure
 - `src/electron.main`: Haxe source code for the Electron Main (ie. very first JS file to be ran on startup).
