@@ -32,14 +32,6 @@ class ElectronMain {
 			icon: __dirname+"/appIcon.png",
 			backgroundColor: '#1e2229'
 		});
-		mainWindow.once("ready-to-show", ev->{
-			/*
-				Zoom the main window to fit specified dimensions inside of it.
-
-				This ensures consistency between DOM scaling on various resolutions. Without it, the page elements would appear tiny on large resolutions (eg. 4k). Note: the zoom factor cannot go below 1.0 to prevent font blurring.
-			*/
-			mainWindow.webContents.setZoomFactor( ET.getZoomToFit(800, 600));
-		});
 
 		// Inits
 		initIpcBindings();
@@ -54,15 +46,27 @@ class ElectronMain {
 		mainWindow.setMenu(null);
 		#end
 
-		// Load app page
+		// Load boot document
 		var path = 'electron/appAssets/boot.html';
 		var p = mainWindow.loadFile(path);
 		mainWindow.maximize();
 		p.then( (_)->{}, (_)->ET.fatalError('File not found: (${ET.getAppResourceDir()}/$path)!') );
 
-		// Destroy
+		// Destroy event
 		mainWindow.on('closed', function() {
 			mainWindow = null;
+		});
+
+		// Window is ready
+		mainWindow.once("ready-to-show", ev->{
+			/*
+				Zoom the main window to fit specified dimensions inside in its bounds.
+
+				This ensures consistency between DOM scaling on various resolutions. Without it, the page elements would appear tiny on large resolutions (eg. 4k). Note: the zoom factor cannot go below `1/pixelRatio` to prevent font blurring.
+			*/
+			trace("pixelRatio="+ET.getPixelRatio());
+			mainWindow.webContents.setZoomFactor( ET.getZoomToFit(800, 600) );
+			trace("zoom="+mainWindow.webContents.getZoomFactor());
 		});
 	}
 
