@@ -36,3 +36,10 @@ After retrieving the source code, open a command line **in the root of the repo*
 ```
 npm i
 ```
+
+## Repo structure
+- `src/electron.main`: Haxe source code for the Electron Main (ie. very first JS file to be ran on startup).
+- `src/electron.renderer`: Haxe source code for the Electron Renderer (ie. the actual app browser window).
+- `src/bindinds`: various extern bindings for Haxe (jQuery, electron auto-updater etc).
+- `electron`: Electron related files (ie. application and redistributable assets)
+- `res`: Heaps (webGL) resources, if any.
