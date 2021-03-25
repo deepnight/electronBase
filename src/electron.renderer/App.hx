@@ -1,5 +1,12 @@
 import electron.renderer.IpcRenderer;
 
+
+typedef HtmlTemplate = {
+	var fp : dn.FilePath;
+	var jq : js.jquery.JQuery;
+	var fromCache : Bool;
+}
+
 class App extends dn.Process {
 	public static var ME : App;
 	public static var LOG : dn.Log = new dn.Log(5000);
@@ -272,6 +279,42 @@ class App extends dn.Process {
 			clearAppMask();
 			_load();
 		}
+	}
+
+
+	/** Retrieve HTML file path from a template ID **/
+	function getTemplatePath(id:String) : dn.FilePath {
+		var fp = dn.FilePath.fromFile(id);
+		if( fp.extension==null )
+			fp.extension = "html";
+
+		if( fp.directory==null )
+			fp.appendDirectory( App.APP_ASSETS_DIR+'/tpl' );
+
+		return fp;
+	}
+
+
+
+	/**
+		If `id` doesn't provide a file path, the template will be loaded from the `tpl` folder in app assets.
+		The `vars` parameter should be an anonymous object containing variables to be used in the HTML template file. Example: HTML contains `::myVar::` string anywhere in it, the expected `vars` parameter should be `{ myVar : "the replacement value" }`.
+	**/
+	public function loadTemplate(id:String, ?vars:Dynamic) : HtmlTemplate {
+		var fp = getTemplatePath(id);
+
+		App.LOG.fileOp('Loading page template: ${fp.full}');
+
+		var raw = NT.readFileString(fp.full);
+		if( raw==null )
+			throw "Page not found: "+id+" in "+fp.full+"( cwd="+ET.getAppResourceDir()+")";
+
+		if( vars!=null && Type.typeof(vars)==TObject ) {
+			for(k in Reflect.fields(vars))
+				raw = StringTools.replace( raw, '::$k::', Reflect.field(vars,k) );
+		}
+
+		return { fp:fp, fromCache:false, jq:new JQ(raw) };
 	}
 
 
