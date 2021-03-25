@@ -242,6 +242,7 @@ class App extends dn.Process {
 	}
 
 
+	/** Remove currently loaded Page. **/
 	function clearCurPage() {
 		jPage
 			.empty()
@@ -256,7 +257,13 @@ class App extends dn.Process {
 		}
 	}
 
+	/** Return TRUE if any page was loaded using `loadPage()` **/
+	public inline function hasPage() {
+		return curPage!=null && !curPage.destroyed;
+	}
 
+
+	/** Load a Page class. Only 1 page can be displayed at a time. **/
 	public function loadPage( fadeAnimation=true, create:()->Page ) {
 		function _load() {
 			clearCurPage();
@@ -324,6 +331,8 @@ class App extends dn.Process {
 			ME = null;
 	}
 
+	/** Set app window title (or revert to its default value) **/
+
 	public function setWindowTitle(?str:String) {
 		var base = Const.APP_NAME;
 		if( str==null )
@@ -334,23 +343,14 @@ class App extends dn.Process {
 		ET.setWindowTitle(str);
 	}
 
-	public inline function hasPage() {
-		return curPage!=null && !curPage.destroyed;
-	}
-
+	/** Quit app **/
 	public function exit(ignoreUnsaved=false) {
 		ET.exitApp();
 	}
 
-	public inline function getElectronZoomFactor() {
-		return electron.renderer.WebFrame.getZoomFactor();
-	}
-
-	#if debug
-	public function reload() {
+	public function reloadRendererWindow() {
 		ET.reloadWindow();
 	}
-	#end
 
 	override function update() {
 		super.update();
