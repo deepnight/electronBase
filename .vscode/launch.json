@@ -5,7 +5,7 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
-			"name": "Debug renderer",
+			"name": "Run Renderer",
 			"type": "chrome",
 			"request": "launch",
 			"cwd": "${workspaceFolder}",
@@ -17,7 +17,7 @@
 				".",
 				"--remote-debugging-port=9222"
 			],
-			"preLaunchTask": "Electron Renderer debug",
+			"preLaunchTask": "Renderer debug",
 		}
 	]
 }

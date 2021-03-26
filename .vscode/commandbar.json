@@ -7,7 +7,7 @@
 			"text": "⚡ Rdr dbg",
 			"color": "yellow",
 			"commandType":"palette",
-			"command": "workbench.action.tasks.runTask|Electron Renderer debug",
+			"command": "workbench.action.tasks.runTask|Renderer debug",
 			"alignment": "right",
 			"skipTerminateQuickPick": false,
 			"priority": -21
@@ -16,7 +16,7 @@
 			"text": "⚡ Main dbg",
 			"color": "yellow",
 			"commandType":"palette",
-			"command": "workbench.action.tasks.runTask|Electron Main debug",
+			"command": "workbench.action.tasks.runTask|Main debug",
 			"alignment": "right",
 			"skipTerminateQuickPick": false,
 			"priority": -23
